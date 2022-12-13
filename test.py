@@ -1,19 +1,31 @@
+# Implementation of the boyer-moore string search algorithm, based on the python
+# implementation provided at https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string-search_algorithm ,
+# but modified to support Unicode and also to support searching in files.
+#
+# Erik K. Nyquist 2022
+
 import io
 from typing import *
 
-
 # We want to support Unicode strings, so instead of having an alphabet based
-# on ASCII chars or UTF-8 code points, the alphabet is based on raw byte values,
-# which results in an alphabet size of 256 for all possible byte values (0x0-0xff)
+# on ASCII chars or UTF-8 code points, the alphabet is based on byte values,
+# which requires an alphabet size of 256 for all possible byte values (0x0-0xff)
 ALPHABET_SIZE = 256
 
 
 class _BmInputType(object):
+    """
+    Enumerates all possible data types for input data (the data inside which we search
+    for a pattern)
+    """
     STRING = 0
     FILE = 1
 
 
 class _BmInputStream(object):
+    """
+    Represents a stream of input data (the data inside which we search for a pattern)
+    """
     def __init__(self, obj, offset=0):
         self.data_type = None
         self.pos = offset
@@ -36,7 +48,14 @@ class _BmInputStream(object):
         else:
             raise ValueError(f"Invalid data type {type(obj)}")
 
-    def peek(self, pos):
+    def peek(self, pos: int) -> int:
+        """
+        Return the byte at a specific byte offset in the stream, as an integer
+
+        :param int pos: byte offset to peek
+        :return: byte value at offset
+        :rtype: int
+        """
         ret = None
         if self.data_type == _BmInputType.STRING:
             ret = self.obj[pos]
@@ -162,7 +181,7 @@ def _full_shift_table(S: str) -> List[int]:
 
     return F
 
-def _base_search(R, L, F, P, T) -> List[int]:
+def _base_search(R, L, F, P, T, greedy) -> List[int]:
     """
     Implementation of the Boyer-Moore string search algorithm. This finds all occurrences of P
     in T, and incorporates numerous ways of pre-processing the pattern to determine the optimal
@@ -190,6 +209,10 @@ def _base_search(R, L, F, P, T) -> List[int]:
 
         if i == -1 or h == previous_k:  # Match has been found (Galil's rule)
             matches.append(k - len(P) + 1)
+
+            if not greedy:
+                return matches
+
             k += len(P) - F[1] if len(P) > 1 else 1
 
         else:  # No match, shift by max of bad character and good suffix rules
@@ -226,55 +249,68 @@ def boyermoore_preprocess(pattern) -> Tuple:
 
     return R, L, F, pattern
 
-def boyermoore_string_pp(pp_data, string) -> List[int]:
+def boyermoore_string_pp(pp_data, string, greedy=True) -> List[int]:
     """
     Search for all occurrences of a pre-processed pattern inside a string.
 
     :param pp_data: return value from boyermoore_preprocess
     :param string: input data to search for pattern inside. Must be either str or bytes.
+    :param bool greedy: If True, all occurrences will be returned. If False, \
+        the search will stop after the first occurrence and only the first \
+        occurrence will be returned.
     :return: list of byte offsets of all occurrences that were found
     :rtype: [int]
     """
     R, L, F, P = pp_data
-    return _base_search(R, L, F, P, string)
+    return _base_search(R, L, F, P, string, greedy)
 
-def boyermoore_file_pp(pp_data, filename) -> List[int]:
+def boyermoore_file_pp(pp_data, filename, greedy=True) -> List[int]:
     """
     Search for all occurrences of a pre-processed pattern inside a file.
 
     :param pp_data: return value from boyermoore_preprocess
-    :param str string: name of file search for pattern in
+    :param str filename: name of file search for pattern in
+    :param bool greedy: If True, all occurrences will be returned. If False, \
+        the search will stop after the first occurrence and only the first \
+        occurrence will be returned.
     :return: list of byte offsets of all occurrences that were found
     :rtype: [int]
     """
     R, L, F, P = pp_data
-    return _base_search(R, L, F, P, open(filename, 'rb'))
+    return _base_search(R, L, F, P, open(filename, 'rb'), greedy)
 
-def boyermoore_string(pattern, string) -> List[int]:
+def boyermoore_string(pattern, string, greedy=True) -> List[int]:
     """
     Pre-process a pattern and search for all occurences inside a string.
 
     :param pattern: pattern to search for. Must be either str or bytes.
     :param string: input data to search for pattern inside. Must be either str or bytes.
+    :param bool greedy: If True, all occurrences will be returned. If False, \
+        the search will stop after the first occurrence and only the first \
+        occurrence will be returned.
     :return: list of byte offsets of all occurrences that were found
     :rtype: [int]
     """
     R, L, F, P = boyermoore_preprocess(pattern)
-    return _base_search(R, L, F, P, string)
+    return _base_search(R, L, F, P, string, greedy)
 
-def boyermoore_file(pattern, filename) -> List[int]:
+def boyermoore_file(pattern, filename, greedy=True) -> List[int]:
     """
     Pre-process a pattern and search for all occurences inside a file.
 
     :param pattern: pattern to search for. Must be either str or bytes.
-    :param string: name of file to search for pattern in
+    :param filename: name of file to search for pattern in
+    :param bool greedy: If True, all occurrences will be returned. If False, \
+        the search will stop after the first occurrence and only the first \
+        occurrence will be returned.
     :return: list of byte offsets of all occurrences that were found
     :rtype: [int]
     """
     R, L, F, P = boyermoore_preprocess(pattern)
-    return _base_search(R, L, F, P, open(filename, 'rb'))
+    return _base_search(R, L, F, P, open(filename, 'rb'), greedy)
 
 
 #s = b"ABC\u0327\u0327ABCABCABCABC\u0327\u0327ABCABCABCABC\u0327\u0327"
 #print(string_search(b'\u0327\u0327', s))
+#print(boyermoore_file("À Á Â Ã Ä Å", "big_file.txt", greedy=False))
 print(boyermoore_file("À Á Â Ã Ä Å", "big_file.txt"))
