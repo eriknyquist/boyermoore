@@ -1,12 +1,11 @@
+test_data = b"abcdefghijklmnop" * 4096
 
 def _rand_data(num):
     ret = b""
-    data = b"abcdefghijklmnopqrstuvwxyz" * 500
-
     while len(ret) < num:
         remaining = num - len(ret)
-        size = remaining if remaining < len(data) else len(data)
-        ret += data[:size]
+        size = remaining if remaining < len(test_data) else len(test_data)
+        ret += test_data[:size]
 
     return ret
 
@@ -20,5 +19,12 @@ def make_big_file(filename, pattern, offsets):
             fh.write(data_to_write)
             last_offset += len(data_to_write)
 
+offsets = [
+    1024 * 1024 * 10,
+    1024 * 1024 * 50,
+    1024 * 1024 * 100,
+    1024 * 1024 * 200,
+    1024 * 1024 * 300
+]
 
-make_big_file("big_file.txt", "À Á Â Ã Ä Å".encode(), [12, 100, 5000, 100000000, 100000200])
+make_big_file("big_file.txt", "À Á Â Ã Ä Å".encode(), offsets)

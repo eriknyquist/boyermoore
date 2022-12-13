@@ -249,6 +249,7 @@ def boyermoore_preprocess(pattern) -> Tuple:
 
     return R, L, F, pattern
 
+
 def boyermoore_string_pp(pp_data, string, greedy=True) -> List[int]:
     """
     Search for all occurrences of a pre-processed pattern inside a string.
@@ -263,6 +264,7 @@ def boyermoore_string_pp(pp_data, string, greedy=True) -> List[int]:
     """
     R, L, F, P = pp_data
     return _base_search(R, L, F, P, string, greedy)
+
 
 def boyermoore_file_pp(pp_data, filename, greedy=True) -> List[int]:
     """
@@ -279,6 +281,7 @@ def boyermoore_file_pp(pp_data, filename, greedy=True) -> List[int]:
     R, L, F, P = pp_data
     return _base_search(R, L, F, P, open(filename, 'rb'), greedy)
 
+
 def boyermoore_string(pattern, string, greedy=True) -> List[int]:
     """
     Pre-process a pattern and search for all occurences inside a string.
@@ -293,6 +296,7 @@ def boyermoore_string(pattern, string, greedy=True) -> List[int]:
     """
     R, L, F, P = boyermoore_preprocess(pattern)
     return _base_search(R, L, F, P, string, greedy)
+
 
 def boyermoore_file(pattern, filename, greedy=True) -> List[int]:
     """
