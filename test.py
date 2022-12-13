@@ -2,32 +2,35 @@ import io
 from typing import *
 
 
+# We want to support Unicode strings, so instead of having an alphabet based
+# on ASCII chars or UTF-8 code points, the alphabet is based on raw byte values,
+# which results in an alphabet size of 256 for all possible byte values (0x0-0xff)
 ALPHABET_SIZE = 256
 
 
-class BmInputType(object):
+class _BmInputType(object):
     STRING = 0
     FILE = 1
 
 
-class BmInputStream(object):
+class _BmInputStream(object):
     def __init__(self, obj, offset=0):
         self.data_type = None
         self.pos = offset
         self.data_size = 0
 
         if isinstance(obj, io.IOBase):
-            self.data_type = BmInputType.FILE
+            self.data_type = _BmInputType.FILE
             obj.seek(0, 2)
             self.data_size = obj.tell()
             obj.seek(self.pos)
             self.obj = obj
         elif isinstance(obj, str):
-            self.data_type = BmInputType.STRING
+            self.data_type = _BmInputType.STRING
             self.data_size = len(obj)
             self.obj = obj.encode()
         elif isinstance(obj, bytes):
-            self.data_type = BmInputType.STRING
+            self.data_type = _BmInputType.STRING
             self.data_size = len(obj)
             self.obj = obj
         else:
@@ -35,16 +38,16 @@ class BmInputStream(object):
 
     def peek(self, pos):
         ret = None
-        if self.data_type == BmInputType.STRING:
+        if self.data_type == _BmInputType.STRING:
             ret = self.obj[pos]
-        elif self.data_type == BmInputType.FILE:
+        elif self.data_type == _BmInputType.FILE:
             self.obj.seek(pos)
             ret = self.obj.read(1)[0]
 
         return ret
 
 
-def match_length(S: bytes, idx1: int, idx2: int) -> int:
+def _match_length(S: bytes, idx1: int, idx2: int) -> int:
     """Return the length of the match of the substrings of S beginning at idx1 and idx2."""
     if idx1 == idx2:
         return len(S) - idx1
@@ -57,7 +60,7 @@ def match_length(S: bytes, idx1: int, idx2: int) -> int:
 
     return match_count
 
-def fundamental_preprocess(S: bytes) -> List[int]:
+def _fundamental_preprocess(S: bytes) -> List[int]:
     """Return Z, the Fundamental Preprocessing of S.
 
     Z[i] is the length of the substring beginning at i which is also a prefix of S.
@@ -71,7 +74,7 @@ def fundamental_preprocess(S: bytes) -> List[int]:
 
     z = [0 for x in S]
     z[0] = len(S)
-    z[1] = match_length(S, 0, 1)
+    z[1] = _match_length(S, 0, 1)
 
     for i in range(2, 1 + z[1]):  # Optimization from exercise 1-5
         z[i] = z[1] - i + 1
@@ -87,18 +90,18 @@ def fundamental_preprocess(S: bytes) -> List[int]:
             if b < a:  # b ends within existing z-box
                 z[i] = b
             else:  # b ends at or after the end of the z-box, we need to do an explicit match to the right of the z-box
-                z[i] = a + match_length(S, a, r + 1)
+                z[i] = a + _match_length(S, a, r + 1)
                 l = i
                 r = i + z[i] - 1
         else:  # i does not reside within existing z-box
-            z[i] = match_length(S, 0, i)
+            z[i] = _match_length(S, 0, i)
             if z[i] > 0:
                 l = i
                 r = i + z[i] - 1
 
     return z
 
-def bad_character_table(S: bytes) -> List[List[int]]:
+def _bad_character_table(S: bytes) -> List[List[int]]:
     """
     Generates R for S, which is an array indexed by the position of some character c in the
     English alphabet. At that index in R is an array of length |S|+1, specifying for each
@@ -120,7 +123,7 @@ def bad_character_table(S: bytes) -> List[List[int]]:
 
     return R
 
-def good_suffix_table(S: str) -> List[int]:
+def _good_suffix_table(S: str) -> List[int]:
     """
     Generates L for S, an array used in the implementation of the strong good suffix rule.
     L[i] = k, the largest position in S such that S[i:] (the suffix of S starting at i) matches
@@ -132,7 +135,7 @@ def good_suffix_table(S: str) -> List[int]:
     Since only proper suffixes matter, L[0] = -1.
     """
     L = [-1 for c in S]
-    N = fundamental_preprocess(S[::-1])  # S[::-1] reverses S
+    N = _fundamental_preprocess(S[::-1])  # S[::-1] reverses S
     N.reverse()
 
     for j in range(0, len(S) - 1):
@@ -142,7 +145,7 @@ def good_suffix_table(S: str) -> List[int]:
 
     return L
 
-def full_shift_table(S: str) -> List[int]:
+def _full_shift_table(S: str) -> List[int]:
     """
     Generates F for S, an array used in a special case of the good suffix rule in the Boyer-Moore
     string search algorithm. F[i] is the length of the longest suffix of S[i:] that is also a
@@ -150,7 +153,7 @@ def full_shift_table(S: str) -> List[int]:
     text T is len(P) - F[i] for a mismatch occurring at i-1.
     """
     F = [0 for c in S]
-    Z = fundamental_preprocess(S)
+    Z = _fundamental_preprocess(S)
 
     longest = 0
     for i, zv in enumerate(reversed(Z)):
@@ -169,7 +172,7 @@ def _base_search(R, L, F, P, T) -> List[int]:
     """
     matches = []
 
-    stream = BmInputStream(T)
+    stream = _BmInputStream(T)
 
     if len(P) == 0 or stream.data_size == 0 or stream.data_size < len(P):
         return []
@@ -203,32 +206,72 @@ def _base_search(R, L, F, P, T) -> List[int]:
 
     return matches
 
-def boyermoore_preprocess(P):
-    if isinstance(P, str):
-        P = P.encode()
-    elif not isinstance(P, bytes):
+
+def boyermoore_preprocess(pattern) -> Tuple:
+    """
+    Pre-process a pattern, for use with boyermoore_string_pp or boyermoore_file_pp.
+
+    :param pattern: pattern to pre-process. Must be either str or bytes.
+    :return: tuple of preprocessed data
+    :rtype: tuple
+    """
+    if isinstance(pattern, str):
+        pattern = pattern.encode()
+    elif not isinstance(pattern, bytes):
         raise ValueError("Pattern must be str or bytes")
 
-    R = bad_character_table(P)
-    L = good_suffix_table(P)
-    F = full_shift_table(P)
+    R = _bad_character_table(pattern)
+    L = _good_suffix_table(pattern)
+    F = _full_shift_table(pattern)
 
-    return R, L, F, P
+    return R, L, F, pattern
 
-def boyermoore_string_pp(pp_data, string):
+def boyermoore_string_pp(pp_data, string) -> List[int]:
+    """
+    Search for all occurrences of a pre-processed pattern inside a string.
+
+    :param pp_data: return value from boyermoore_preprocess
+    :param string: input data to search for pattern inside. Must be either str or bytes.
+    :return: list of byte offsets of all occurrences that were found
+    :rtype: [int]
+    """
     R, L, F, P = pp_data
     return _base_search(R, L, F, P, string)
 
-def boyermoore_string(pattern, string):
-    R, L, F, P = boyermoore_preprocess(pattern)
-    return _base_search(R, L, F, P, string)
+def boyermoore_file_pp(pp_data, filename) -> List[int]:
+    """
+    Search for all occurrences of a pre-processed pattern inside a file.
 
-def boyermoore_file(pattern, filename):
-    R, L, F, P = boyermoore_preprocess(pattern)
+    :param pp_data: return value from boyermoore_preprocess
+    :param str string: name of file search for pattern in
+    :return: list of byte offsets of all occurrences that were found
+    :rtype: [int]
+    """
+    R, L, F, P = pp_data
     return _base_search(R, L, F, P, open(filename, 'rb'))
 
-def boyermoore_file_pp(pp_data, filename):
-    R, L, F, P = pp_data
+def boyermoore_string(pattern, string) -> List[int]:
+    """
+    Pre-process a pattern and search for all occurences inside a string.
+
+    :param pattern: pattern to search for. Must be either str or bytes.
+    :param string: input data to search for pattern inside. Must be either str or bytes.
+    :return: list of byte offsets of all occurrences that were found
+    :rtype: [int]
+    """
+    R, L, F, P = boyermoore_preprocess(pattern)
+    return _base_search(R, L, F, P, string)
+
+def boyermoore_file(pattern, filename) -> List[int]:
+    """
+    Pre-process a pattern and search for all occurences inside a file.
+
+    :param pattern: pattern to search for. Must be either str or bytes.
+    :param string: name of file to search for pattern in
+    :return: list of byte offsets of all occurrences that were found
+    :rtype: [int]
+    """
+    R, L, F, P = boyermoore_preprocess(pattern)
     return _base_search(R, L, F, P, open(filename, 'rb'))
 
 
