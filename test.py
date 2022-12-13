@@ -159,7 +159,7 @@ def full_shift_table(S: str) -> List[int]:
 
     return F
 
-def _base_search(P, T) -> List[int]:
+def _base_search(R, L, F, P, T) -> List[int]:
     """
     Implementation of the Boyer-Moore string search algorithm. This finds all occurrences of P
     in T, and incorporates numerous ways of pre-processing the pattern to determine the optimal
@@ -169,20 +169,10 @@ def _base_search(P, T) -> List[int]:
     """
     matches = []
 
-    if isinstance(P, str):
-        P = P.encode()
-    elif not isinstance(P, bytes):
-        raise ValueError("Pattern must be str or bytes")
-
     stream = BmInputStream(T)
 
     if len(P) == 0 or stream.data_size == 0 or stream.data_size < len(P):
         return []
-
-    # Preprocessing
-    R = bad_character_table(P)
-    L = good_suffix_table(P)
-    F = full_shift_table(P)
 
     k = len(P) - 1      # Represents alignment of end of P relative to T
     previous_k = -1     # Represents alignment in previous phase (Galil's rule)
@@ -213,13 +203,35 @@ def _base_search(P, T) -> List[int]:
 
     return matches
 
-def boyer_moore_string(pattern, string):
-    return _base_search(pattern, string)
+def boyermoore_preprocess(P):
+    if isinstance(P, str):
+        P = P.encode()
+    elif not isinstance(P, bytes):
+        raise ValueError("Pattern must be str or bytes")
 
-def boyer_moore_file(pattern, filename):
-    return _base_search(pattern, open(filename, 'rb'))
+    R = bad_character_table(P)
+    L = good_suffix_table(P)
+    F = full_shift_table(P)
+
+    return R, L, F, P
+
+def boyermoore_string_pp(pp_data, string):
+    R, L, F, P = pp_data
+    return _base_search(R, L, F, P, string)
+
+def boyermoore_string(pattern, string):
+    R, L, F, P = boyermoore_preprocess(pattern)
+    return _base_search(R, L, F, P, string)
+
+def boyermoore_file(pattern, filename):
+    R, L, F, P = boyermoore_preprocess(pattern)
+    return _base_search(R, L, F, P, open(filename, 'rb'))
+
+def boyermoore_file_pp(pp_data, filename):
+    R, L, F, P = pp_data
+    return _base_search(R, L, F, P, open(filename, 'rb'))
 
 
 #s = b"ABC\u0327\u0327ABCABCABCABC\u0327\u0327ABCABCABCABC\u0327\u0327"
 #print(string_search(b'\u0327\u0327', s))
-print(boyer_moore_file("À Á Â Ã Ä Å", "big_file.txt"))
+print(boyermoore_file("À Á Â Ã Ä Å", "big_file.txt"))
