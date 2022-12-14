@@ -13,12 +13,17 @@ TEST_STRINGS = [
     "Hello, World!",
     "IIJJIIJJKKKKKKKK",
     "hello this is a test string and I need to make it kinda long so",
-    "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVv"
+    "AaBbCcDdEeFf{};';GgHhIiJjKkLlMmNn(*98Jaahgoi78^&*6%6745tUuVv",
+    "कखगघ ङचछजझञ टठडढणतथदधन",
+    "ճմնշոչպ ջռսվ տրց",
+    "⅓ ⅔ ⅕ ⅖⅗ ⅘ ⅙⅚⅛ ⅜ ⅝⅞ ⅟ Ⅰ Ⅱ Ⅲ ⅣⅤⅥ Ⅶ Ⅷ Ⅸ Ⅹ ⅪⅫ Ⅼ ⅭⅮ Ⅿ ⅰⅱⅲ ⅳ ⅴ ⅵⅶⅷ ⅸ ⅹ ⅺⅻ"
 ]
 
 TEST_OFFSETS = [
     [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000],
-    [1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072]
+    [1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072],
+    [1000, 5000, 20000],
+    [131072]
 ]
 
 TEST_DATA = {s: [o for o in TEST_OFFSETS] for s in TEST_STRINGS}
