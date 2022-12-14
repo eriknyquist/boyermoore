@@ -25,7 +25,11 @@ Test methodology
 ================
 
 The test searches for all occurrences of a fixed unicode string in a series of test files.
-The unicode string is "Hello नमस्ते Привет こんにちは".
+The unicode string is:
+
+::
+
+    "Hello नमस्ते Привет こんにちは".
 
 Each test file has 2 occurrences of the unicode string, one at the very beginning (byte offset of 0)
 and one at the very end (byte offset of [file_length - pattern_length]).
@@ -34,7 +38,7 @@ Test results
 ============
 
 The following table shows the times taken to search for all occurences of the unicode
-string inside test files of various sizes.
+string "Hello नमस्ते Привет こんにちは" inside test files of various sizes.
 
 +-----------+----------------+
 | File size | Time (seconds) |
