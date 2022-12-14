@@ -202,7 +202,7 @@ def _base_search(R, L, F, P, T, greedy) -> List[int]:
             if stream.data_type == _BmInputType.STRING:
                 peeked = stream.obj[h]
             elif stream.data_type == _BmInputType.FILE:
-                stream.obj.seek(h)
+                stream.obj.seek(h if h >= 0 else 0)
                 peeked = stream.obj.read(1)[0]
 
         if i == -1 or h == previous_k:  # Match has been found (Galil's rule)
