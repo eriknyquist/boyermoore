@@ -11,6 +11,10 @@ def _rand_data(num):
 
 
 def make_big_bytes(pattern, offsets):
+    """
+    Make a bytes object of size (offsets[-1] + len(pattern)), with an instance of
+    the bytes object 'pattern' at each byte offset in 'offsets'
+    """
     last_offset = 0
     ret = b''
 
@@ -24,5 +28,9 @@ def make_big_bytes(pattern, offsets):
 
 
 def make_big_file(filename, pattern, offsets):
+    """
+    Make a bytes object via make_big_bytes(pattern, offsets), and write it to
+    new file 'filename'
+    """
     with open(filename, 'wb') as fh:
         fh.write(make_big_bytes(pattern, offsets))
