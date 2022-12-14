@@ -17,7 +17,7 @@ Searching for all occurences of a substring in a file
 
 ::
 
-    >>> from boyer_moore import search_file
+    >>> from boyermoore import search_file
     >>>
     >>> offsets = search_file("pattern!", "file.txt")                 # Find all occurrences of "pattern!" in file "file.txt"
     >>> offsets                                                       # Display found occurrences
@@ -28,7 +28,7 @@ Searching for athe first occurence of a substring in a file
 
 ::
 
-    >>> from boyer_moore import search_file
+    >>> from boyermoore import search_file
     >>>
     >>> offsets = search_file("pattern!", "file.txt", greedy=False)   # Find the first occurrence of "pattern!" in file "file.txt"
     >>> offsets                                                       # Display found occurrences
