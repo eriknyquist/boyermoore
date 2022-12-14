@@ -1,3 +1,5 @@
+__version__ = 1.0.0
+
 # Implementation of the boyer-moore string search algorithm, based on the python
 # implementation provided at https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string-search_algorithm ,
 # but modified to support Unicode and also to support searching in files.
@@ -228,7 +230,7 @@ def _base_search(R, L, F, P, T, greedy) -> List[int]:
     return matches
 
 
-def boyermoore_preprocess(pattern) -> Tuple:
+def preprocess(pattern) -> Tuple:
     """
     Pre-process a pattern, for use with boyermoore_string_pp or boyermoore_file_pp.
 
@@ -248,11 +250,11 @@ def boyermoore_preprocess(pattern) -> Tuple:
     return R, L, F, pattern
 
 
-def boyermoore_string_pp(pp_data, string, greedy=True) -> List[int]:
+def search_string_pp(pp_data, string, greedy=True) -> List[int]:
     """
     Search for all occurrences of a pre-processed pattern inside a string.
 
-    :param pp_data: return value from boyermoore_preprocess
+    :param pp_data: return value from boyermoore.preprocess
     :param string: input data to search for pattern inside. Must be either str or bytes.
     :param bool greedy: If True, all occurrences will be returned. If False, \
         the search will stop after the first occurrence and only the first \
@@ -264,11 +266,11 @@ def boyermoore_string_pp(pp_data, string, greedy=True) -> List[int]:
     return _base_search(R, L, F, P, string, greedy)
 
 
-def boyermoore_file_pp(pp_data, filename, greedy=True) -> List[int]:
+def search_file_pp(pp_data, filename, greedy=True) -> List[int]:
     """
     Search for all occurrences of a pre-processed pattern inside a file.
 
-    :param pp_data: return value from boyermoore_preprocess
+    :param pp_data: return value from boyermoore.preprocess
     :param str filename: name of file search for pattern in
     :param bool greedy: If True, all occurrences will be returned. If False, \
         the search will stop after the first occurrence and only the first \
@@ -280,7 +282,7 @@ def boyermoore_file_pp(pp_data, filename, greedy=True) -> List[int]:
     return _base_search(R, L, F, P, open(filename, 'rb'), greedy)
 
 
-def boyermoore_string(pattern, string, greedy=True) -> List[int]:
+def search_string(pattern, string, greedy=True) -> List[int]:
     """
     Pre-process a pattern and search for all occurences inside a string.
 
@@ -292,11 +294,11 @@ def boyermoore_string(pattern, string, greedy=True) -> List[int]:
     :return: list of byte offsets of all occurrences that were found
     :rtype: [int]
     """
-    R, L, F, P = boyermoore_preprocess(pattern)
+    R, L, F, P = preprocess(pattern)
     return _base_search(R, L, F, P, string, greedy)
 
 
-def boyermoore_file(pattern, filename, greedy=True) -> List[int]:
+def search_file(pattern, filename, greedy=True) -> List[int]:
     """
     Pre-process a pattern and search for all occurences inside a file.
 
@@ -308,12 +310,5 @@ def boyermoore_file(pattern, filename, greedy=True) -> List[int]:
     :return: list of byte offsets of all occurrences that were found
     :rtype: [int]
     """
-    R, L, F, P = boyermoore_preprocess(pattern)
+    R, L, F, P = preprocess(pattern)
     return _base_search(R, L, F, P, open(filename, 'rb'), greedy)
-
-
-#s = b"ABC\u0327\u0327ABCABCABCABC\u0327\u0327ABCABCABCABC\u0327\u0327"
-#print(string_search(b'\u0327\u0327', s))
-#print(boyermoore_file("À Á Â Ã Ä Å", "big_file.txt", greedy=False))
-print(boyermoore_file("hello, my name is erik karl nyquist!", "big_file.txt"))
-#print(boyermoore_file("hello, world", "big_file.txt"))
