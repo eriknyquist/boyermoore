@@ -28,7 +28,7 @@ with open(README, 'r') as f:
 setup(
     name='boyermoore',
     version=__version__,
-    description=('Boyer-moore in pure python, search for byte patterns in large files very quickly'),
+    description=('Boyer-moore in pure python, search for unicode strings in large files very quickly'),
     long_description=long_description,
     url='http://github.com/eriknyquist/boyermoore',
     author='Erik Nyquist',
