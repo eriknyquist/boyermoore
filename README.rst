@@ -29,7 +29,10 @@ The unicode string is:
 
 ::
 
-    "Hello नमस्ते Привет こんにちは".
+    Hello नमस्ते Привет こんにちは
+
+("Hello" in English, followed by the Hindi translation, followed by the Russian translation,
+followed by the Japanese translation)
 
 Each test file has 2 occurrences of the unicode string, one at the very beginning (byte offset of 0)
 and one at the very end (byte offset of [file_length - pattern_length]).
