@@ -1,4 +1,4 @@
-__version__ = 1.0.0
+__version__ = "1.0.0"
 
 # Implementation of the boyer-moore string search algorithm, based on the python
 # implementation provided at https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string-search_algorithm ,
