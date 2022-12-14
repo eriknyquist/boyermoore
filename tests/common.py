@@ -20,7 +20,9 @@ def make_big_bytes(pattern, offsets):
         ret += data_to_write
         last_offset += len(data_to_write)
 
+    return ret
 
-def make_big_file(filename, pattern offsets):
+
+def make_big_file(filename, pattern, offsets):
     with open(filename, 'wb') as fh:
         fh.write(make_big_bytes(pattern, offsets))

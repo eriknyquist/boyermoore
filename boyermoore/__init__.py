@@ -190,7 +190,7 @@ def _base_search(R, L, F, P, T, greedy) -> List[int]:
 
         peeked = None
         if stream.data_type == _BmInputType.STRING:
-            peeked = self.obj[h]
+            peeked = stream.obj[h]
         elif stream.data_type == _BmInputType.FILE:
             stream.obj.seek(h)
             peeked = stream.obj.read(1)[0]
@@ -200,7 +200,7 @@ def _base_search(R, L, F, P, T, greedy) -> List[int]:
             h -= 1
 
             if stream.data_type == _BmInputType.STRING:
-                peeked = self.obj[h]
+                peeked = stream.obj[h]
             elif stream.data_type == _BmInputType.FILE:
                 stream.obj.seek(h)
                 peeked = stream.obj.read(1)[0]
