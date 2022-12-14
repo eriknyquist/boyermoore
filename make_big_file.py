@@ -27,4 +27,6 @@ offsets = [
     1024 * 1024 * 300
 ]
 
-make_big_file("big_file.txt", "À Á Â Ã Ä Å".encode(), offsets)
+#make_big_file("big_file.txt", "À Á Â Ã Ä Å".encode(), offsets)
+make_big_file("big_file.txt", "hello, my name is erik karl nyquist!".encode(), offsets)
+#make_big_file("big_file.txt", "hello, world".encode(), offsets)

@@ -48,23 +48,6 @@ class _BmInputStream(object):
         else:
             raise ValueError(f"Invalid data type {type(obj)}")
 
-    def peek(self, pos: int) -> int:
-        """
-        Return the byte at a specific byte offset in the stream, as an integer
-
-        :param int pos: byte offset to peek
-        :return: byte value at offset
-        :rtype: int
-        """
-        ret = None
-        if self.data_type == _BmInputType.STRING:
-            ret = self.obj[pos]
-        elif self.data_type == _BmInputType.FILE:
-            self.obj.seek(pos)
-            ret = self.obj.read(1)[0]
-
-        return ret
-
 
 def _match_length(S: bytes, idx1: int, idx2: int) -> int:
     """Return the length of the match of the substrings of S beginning at idx1 and idx2."""
@@ -203,9 +186,22 @@ def _base_search(R, L, F, P, T, greedy) -> List[int]:
         i = len(P) - 1  # Character to compare in P
         h = k           # Character to compare in T
 
-        while i >= 0 and h > previous_k and P[i] == stream.peek(h):  # Matches starting from end of P
+        peeked = None
+        if stream.data_type == _BmInputType.STRING:
+            peeked = self.obj[h]
+        elif stream.data_type == _BmInputType.FILE:
+            stream.obj.seek(h)
+            peeked = stream.obj.read(1)[0]
+
+        while i >= 0 and h > previous_k and P[i] == peeked:  # Matches starting from end of P
             i -= 1
             h -= 1
+
+            if stream.data_type == _BmInputType.STRING:
+                peeked = self.obj[h]
+            elif stream.data_type == _BmInputType.FILE:
+                stream.obj.seek(h)
+                peeked = stream.obj.read(1)[0]
 
         if i == -1 or h == previous_k:  # Match has been found (Galil's rule)
             matches.append(k - len(P) + 1)
@@ -216,13 +212,15 @@ def _base_search(R, L, F, P, T, greedy) -> List[int]:
             k += len(P) - F[1] if len(P) > 1 else 1
 
         else:  # No match, shift by max of bad character and good suffix rules
-            char_shift = i - R[stream.peek(h)][i]
+            char_shift = i - R[peeked][i]
+
             if i + 1 == len(P):  # Mismatch happened on first attempt
                 suffix_shift = 1
             elif L[i + 1] == -1:  # Matched suffix does not appear anywhere in P
                 suffix_shift = len(P) - F[i + 1]
             else:               # Matched suffix appears in P
                 suffix_shift = len(P) - 1 - L[i + 1]
+
             shift = max(char_shift, suffix_shift)
             previous_k = k if shift >= i + 1 else previous_k  # Galil's rule
             k += shift
@@ -317,4 +315,5 @@ def boyermoore_file(pattern, filename, greedy=True) -> List[int]:
 #s = b"ABC\u0327\u0327ABCABCABCABC\u0327\u0327ABCABCABCABC\u0327\u0327"
 #print(string_search(b'\u0327\u0327', s))
 #print(boyermoore_file("À Á Â Ã Ä Å", "big_file.txt", greedy=False))
-print(boyermoore_file("À Á Â Ã Ä Å", "big_file.txt"))
+print(boyermoore_file("hello, my name is erik karl nyquist!", "big_file.txt"))
+#print(boyermoore_file("hello, world", "big_file.txt"))
