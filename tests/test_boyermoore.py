@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from boyermoore import search_string, search_string_pp, search_file, search_file_pp, preprocess
@@ -53,3 +54,73 @@ class TestBoyerMoore(unittest.TestCase):
                 test_string = make_big_bytes(pattern.encode(), expected_offsets)
                 actual_offsets = search_string_pp(pp_data, test_string, greedy=False)
                 self.assertEqual(actual_offsets, [expected_offsets[0]])
+
+    def test_search_file_greedy(self):
+        count = 0
+
+        for pattern in TEST_DATA:
+            for expected_offsets in TEST_DATA[pattern]:
+                filename = "file_greedy%d.txt" % count
+                count += 1
+
+                test_string = make_big_file(filename, pattern.encode(), expected_offsets)
+                while not os.path.isfile(filename):
+                    pass
+
+                actual_offsets = search_file(pattern, filename)
+                self.assertEqual(actual_offsets, expected_offsets)
+
+                os.remove(filename)
+
+    def test_search_file_notgreedy(self):
+        count = 0
+
+        for pattern in TEST_DATA:
+            for expected_offsets in TEST_DATA[pattern]:
+                filename = "file_notgreedy%d.txt" % count
+                count += 1
+
+                test_string = make_big_file(filename, pattern.encode(), expected_offsets)
+                while not os.path.isfile(filename):
+                    pass
+
+                actual_offsets = search_file(pattern, filename, greedy=False)
+                self.assertEqual(actual_offsets, [expected_offsets[0]])
+
+                os.remove(filename)
+
+    def test_search_file_pp_greedy(self):
+        count = 0
+
+        for pattern in TEST_DATA:
+            pp_data = preprocess(pattern)
+            for expected_offsets in TEST_DATA[pattern]:
+                filename = "file_pp_greedy%d.txt" % count
+                count += 1
+
+                test_string = make_big_file(filename, pattern.encode(), expected_offsets)
+                while not os.path.isfile(filename):
+                    pass
+
+                actual_offsets = search_file_pp(pp_data, filename)
+                self.assertEqual(actual_offsets, expected_offsets)
+
+                os.remove(filename)
+
+    def test_search_file_pp_notgreedy(self):
+        count = 0
+
+        for pattern in TEST_DATA:
+            pp_data = preprocess(pattern)
+            for expected_offsets in TEST_DATA[pattern]:
+                filename = "file_pp_notgreedy%d.txt" % count
+                count += 1
+
+                test_string = make_big_file(filename, pattern.encode(), expected_offsets)
+                while not os.path.isfile(filename):
+                    pass
+
+                actual_offsets = search_file_pp(pp_data, filename, greedy=False)
+                self.assertEqual(actual_offsets, [expected_offsets[0]])
+
+                os.remove(filename)
