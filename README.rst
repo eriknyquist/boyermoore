@@ -23,8 +23,8 @@ Searching for all occurences of a substring in a file
     >>> offsets                                                       # Display found occurrences
     [12, 456, 10422]                                                  # Pattern occurs at byte offsets 12, 456, and 104222
 
-Searching for athe first occurence of a substring in a file
------------------------------------------------------------
+Searching for the first occurence of a substring in a file
+----------------------------------------------------------
 
 ::
 
