@@ -1,3 +1,10 @@
+
+.. |tests_badge| image:: https://github.com/eriknyquist/boyermoore/actions/workflows/tests.yml/badge.svg
+.. |cov_badge| image:: https://github.com/eriknyquist/boyermoore/actions/workflows/coverage.yml/badge.svg
+
+|tests_badge| |cov_badge|
+
+
 Boyer-Moore in pure python: search for unicode strings quickly in large files
 -----------------------------------------------------------------------------
 
