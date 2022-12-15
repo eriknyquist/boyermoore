@@ -38,7 +38,7 @@ Performance / Speed test
 ------------------------
 
 The following section illustrates the average speed of the ``boyermoore.search_file``
-function when searching for a unicode string in files of sizes ranging from 32MB to 1GB.
+function when searching for a unicode string in files of sizes ranging from 32MB to 4GB.
 
 Test environment
 =================
@@ -71,15 +71,17 @@ string "Hello नमस्ते Привет こんにちは" inside test files
 +-----------+----------------+
 | File size | Time (seconds) |
 +===========+================+
-| 32 MB     | 0.54           |
+| 32 MB     | 0.48           |
 +-----------+----------------+
-| 64 MB     | 1.04           |
+| 64 MB     | 0.89           |
 +-----------+----------------+
-| 128 MB    | 2.02           |
+| 128 MB    | 1.68           |
 +-----------+----------------+
-| 256 MB    | 3.97           |
+| 256 MB    | 3.32           |
 +-----------+----------------+
-| 512 MB    | 7.71           |
+| 512 MB    | 6.48           |
 +-----------+----------------+
-| 1 GB      | 16.48          |
+| 1 GB      | 12.98          |
++-----------+----------------+
+| 4 GB      | 53.07          |
 +-----------+----------------+

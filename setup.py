@@ -22,7 +22,7 @@ class RunBoyerMooreTests(Command):
         t = unittest.TextTestRunner(verbosity = 2)
         t.run(suite)
 
-with open(README, 'r') as f:
+with open(README, 'r', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(

@@ -25,7 +25,7 @@ def make_big_file(filename, pattern, offsets):
 
 offsets = [
     0,
-    1024 * 1024 * 32
+    1024 * 1024 * 1024 * 4
 ]
 
 #make_big_file("big_file.txt", "À Á Â Ã Ä Å".encode(), offsets)

@@ -15,42 +15,6 @@ from typing import *
 ALPHABET_SIZE = 256
 
 
-class _BmInputType(object):
-    """
-    Enumerates all possible data types for input data (the data inside which we search
-    for a pattern)
-    """
-    STRING = 0
-    FILE = 1
-
-
-class _BmInputStream(object):
-    """
-    Represents a stream of input data (the data inside which we search for a pattern)
-    """
-    def __init__(self, obj, offset=0):
-        self.data_type = None
-        self.pos = offset
-        self.data_size = 0
-
-        if isinstance(obj, io.IOBase):
-            self.data_type = _BmInputType.FILE
-            obj.seek(0, 2)
-            self.data_size = obj.tell()
-            obj.seek(self.pos)
-            self.obj = obj
-        elif isinstance(obj, str):
-            self.data_type = _BmInputType.STRING
-            self.data_size = len(obj)
-            self.obj = obj.encode()
-        elif isinstance(obj, bytes):
-            self.data_type = _BmInputType.STRING
-            self.data_size = len(obj)
-            self.obj = obj
-        else:
-            raise ValueError(f"Invalid data type {type(obj)}")
-
-
 def _match_length(S: bytes, idx1: int, idx2: int) -> int:
     """Return the length of the match of the substrings of S beginning at idx1 and idx2."""
     if idx1 == idx2:
@@ -166,7 +130,7 @@ def _full_shift_table(S: str) -> List[int]:
 
     return F
 
-def _base_search(R, L, F, P, T, greedy) -> List[int]:
+def _base_search_file(R, L, F, P, T, T_size, greedy) -> List[int]:
     """
     Implementation of the Boyer-Moore string search algorithm. This finds all occurrences of P
     in T, and incorporates numerous ways of pre-processing the pattern to determine the optimal
@@ -176,34 +140,75 @@ def _base_search(R, L, F, P, T, greedy) -> List[int]:
     """
     matches = []
 
-    stream = _BmInputStream(T)
-
-    if len(P) == 0 or stream.data_size == 0 or stream.data_size < len(P):
+    if len(P) == 0 or T_size == 0 or T_size < len(P):
         return []
 
     k = len(P) - 1      # Represents alignment of end of P relative to T
     previous_k = -1     # Represents alignment in previous phase (Galil's rule)
 
-    while k < stream.data_size:
+    while k < T_size:
         i = len(P) - 1  # Character to compare in P
         h = k           # Character to compare in T
 
-        peeked = None
-        if stream.data_type == _BmInputType.STRING:
-            peeked = stream.obj[h]
-        elif stream.data_type == _BmInputType.FILE:
-            stream.obj.seek(h)
-            peeked = stream.obj.read(1)[0]
+        T.seek(h)
+        peeked = T.read(1)[0]
 
         while i >= 0 and h > previous_k and P[i] == peeked:  # Matches starting from end of P
             i -= 1
             h -= 1
 
-            if stream.data_type == _BmInputType.STRING:
-                peeked = stream.obj[h]
-            elif stream.data_type == _BmInputType.FILE:
-                stream.obj.seek(h if h >= 0 else 0)
-                peeked = stream.obj.read(1)[0]
+            T.seek(h if h >= 0 else 0)
+            peeked = T.read(1)[0]
+
+        if i == -1 or h == previous_k:  # Match has been found (Galil's rule)
+            matches.append(k - len(P) + 1)
+
+            if not greedy:
+                return matches
+
+            k += len(P) - F[1] if len(P) > 1 else 1
+
+        else:  # No match, shift by max of bad character and good suffix rules
+            char_shift = i - R[peeked][i]
+
+            if i + 1 == len(P):  # Mismatch happened on first attempt
+                suffix_shift = 1
+            elif L[i + 1] == -1:  # Matched suffix does not appear anywhere in P
+                suffix_shift = len(P) - F[i + 1]
+            else:               # Matched suffix appears in P
+                suffix_shift = len(P) - 1 - L[i + 1]
+
+            shift = max(char_shift, suffix_shift)
+            previous_k = k if shift >= i + 1 else previous_k  # Galil's rule
+            k += shift
+
+    return matches
+
+
+def _base_search_str(R, L, F, P, T, T_size, greedy) -> List[int]:
+    """
+    Copy of _base_search_file, but slightly modified to handle a byte string instead
+    of a file handle. Duplicates a lot of code, BUT avoids additional branches in the inner loop.
+    """
+    matches = []
+
+    if len(P) == 0 or T_size == 0 or T_size < len(P):
+        return []
+
+    k = len(P) - 1      # Represents alignment of end of P relative to T
+    previous_k = -1     # Represents alignment in previous phase (Galil's rule)
+
+    while k < T_size:
+        i = len(P) - 1  # Character to compare in P
+        h = k           # Character to compare in T
+
+        peeked = T[h]
+
+        while i >= 0 and h > previous_k and P[i] == peeked:  # Matches starting from end of P
+            i -= 1
+            h -= 1
+
+            peeked = T[h]
 
         if i == -1 or h == previous_k:  # Match has been found (Galil's rule)
             matches.append(k - len(P) + 1)
@@ -263,7 +268,7 @@ def search_string_pp(pp_data, string, greedy=True) -> List[int]:
     :rtype: [int]
     """
     R, L, F, P = pp_data
-    return _base_search(R, L, F, P, string, greedy)
+    return _base_search_str(R, L, F, P, string, len(string), greedy)
 
 
 def search_file_pp(pp_data, filename, greedy=True) -> List[int]:
@@ -279,7 +284,11 @@ def search_file_pp(pp_data, filename, greedy=True) -> List[int]:
     :rtype: [int]
     """
     R, L, F, P = pp_data
-    return _base_search(R, L, F, P, open(filename, 'rb'), greedy)
+    fh = open(filename, 'rb')
+    fh.seek(0, 2)
+    data_size = fh.tell()
+    fh.seek(0)
+    return _base_search_file(R, L, F, P, fh, data_size, greedy)
 
 
 def search_string(pattern, string, greedy=True) -> List[int]:
@@ -295,7 +304,7 @@ def search_string(pattern, string, greedy=True) -> List[int]:
     :rtype: [int]
     """
     R, L, F, P = preprocess(pattern)
-    return _base_search(R, L, F, P, string, greedy)
+    return _base_search_str(R, L, F, P, string, len(string), greedy)
 
 
 def search_file(pattern, filename, greedy=True) -> List[int]:
@@ -311,4 +320,8 @@ def search_file(pattern, filename, greedy=True) -> List[int]:
     :rtype: [int]
     """
     R, L, F, P = preprocess(pattern)
-    return _base_search(R, L, F, P, open(filename, 'rb'), greedy)
+    fh = open(filename, 'rb')
+    fh.seek(0, 2)
+    data_size = fh.tell()
+    fh.seek(0)
+    return _base_search_file(R, L, F, P, fh, data_size, greedy)
