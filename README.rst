@@ -1,8 +1,9 @@
 
 .. |tests_badge| image:: https://github.com/eriknyquist/boyermoore/actions/workflows/tests.yml/badge.svg
 .. |cov_badge| image:: https://github.com/eriknyquist/boyermoore/actions/workflows/coverage.yml/badge.svg
+.. |codeclimate_badge| image:: https://api.codeclimate.com/v1/badges/a5d499edc22f0a05c533/maintainability
 
-|tests_badge| |cov_badge|
+|tests_badge| |cov_badge| |codeclimate_badge|
 
 
 Boyer-Moore in pure python: search for unicode strings quickly in large files
