@@ -1,15 +1,14 @@
 
+.. contents:: **Table Of Contents**
+
+Boyer-Moore in pure python: search for unicode strings quickly in large files
+-----------------------------------------------------------------------------
+
 .. |tests_badge| image:: https://github.com/eriknyquist/boyermoore/actions/workflows/tests.yml/badge.svg
 .. |cov_badge| image:: https://github.com/eriknyquist/boyermoore/actions/workflows/coverage.yml/badge.svg
 .. |codeclimate_badge| image:: https://api.codeclimate.com/v1/badges/a5d499edc22f0a05c533/maintainability
 
 |tests_badge| |cov_badge| |codeclimate_badge|
-
-
-Boyer-Moore in pure python: search for unicode strings quickly in large files
------------------------------------------------------------------------------
-
-.. contents:: **Table Of Contents**
 
 
 This is an implementation of the Boyer-Moore substring search algorithm in pure python.
@@ -19,6 +18,15 @@ with modifications to support the following additional features:
 
 * Searching in files without reading the whole file into memory, allowing handling of large files
 * Full unicode support
+
+Installing
+----------
+
+Install from ``pip``.
+
+::
+
+    pip install boyermoore
 
 Searching for all occurences of a substring in a file
 -----------------------------------------------------
