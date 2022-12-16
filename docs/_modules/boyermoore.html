@@ -205,16 +205,18 @@
 <span class="sd">    search on ASCII alphabetic characters, spaces not included.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">matches</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">plen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">T_size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">T_size</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">plen</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">T_size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">T_size</span> <span class="o">&lt;</span> <span class="n">plen</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[]</span>
 
-    <span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>      <span class="c1"># Represents alignment of end of P relative to T</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">plen</span> <span class="o">-</span> <span class="mi">1</span>      <span class="c1"># Represents alignment of end of P relative to T</span>
     <span class="n">previous_k</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>     <span class="c1"># Represents alignment in previous phase (Galil&#39;s rule)</span>
 
     <span class="k">while</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">T_size</span><span class="p">:</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># Character to compare in P</span>
-        <span class="n">h</span> <span class="o">=</span> <span class="n">k</span>           <span class="c1"># Character to compare in T</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">plen</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># Character to compare in P</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">k</span>         <span class="c1"># Character to compare in T</span>
 
         <span class="n">T</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
         <span class="n">peeked</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -227,24 +229,24 @@
             <span class="n">peeked</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">or</span> <span class="n">h</span> <span class="o">==</span> <span class="n">previous_k</span><span class="p">:</span>  <span class="c1"># Match has been found (Galil&#39;s rule)</span>
-            <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span> <span class="o">-</span> <span class="n">plen</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">greedy</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">matches</span>
 
-            <span class="n">k</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="n">F</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">1</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="n">plen</span> <span class="o">-</span> <span class="n">F</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">plen</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">1</span>
 
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># No match, shift by max of bad character and good suffix rules</span>
             <span class="n">char_shift</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="n">peeked</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
 
-            <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>  <span class="c1"># Mismatch happened on first attempt</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">plen</span><span class="p">:</span>  <span class="c1"># Mismatch happened on first attempt</span>
                 <span class="n">suffix_shift</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="k">elif</span> <span class="n">L</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>  <span class="c1"># Matched suffix does not appear anywhere in P</span>
-                <span class="n">suffix_shift</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="n">F</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">suffix_shift</span> <span class="o">=</span> <span class="n">plen</span> <span class="o">-</span> <span class="n">F</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>               <span class="c1"># Matched suffix appears in P</span>
-                <span class="n">suffix_shift</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">L</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">suffix_shift</span> <span class="o">=</span> <span class="n">plen</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">L</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 
-            <span class="n">shift</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">char_shift</span><span class="p">,</span> <span class="n">suffix_shift</span><span class="p">)</span>
+            <span class="n">shift</span> <span class="o">=</span> <span class="n">char_shift</span> <span class="k">if</span> <span class="n">char_shift</span> <span class="o">&gt;</span> <span class="n">suffix_shift</span> <span class="k">else</span> <span class="n">suffix_shift</span>
             <span class="n">previous_k</span> <span class="o">=</span> <span class="n">k</span> <span class="k">if</span> <span class="n">shift</span> <span class="o">&gt;=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">previous_k</span>  <span class="c1"># Galil&#39;s rule</span>
             <span class="n">k</span> <span class="o">+=</span> <span class="n">shift</span>
 
@@ -254,19 +256,21 @@
 <span class="k">def</span> <span class="nf">_base_search_str</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">T_size</span><span class="p">,</span> <span class="n">greedy</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Copy of _base_search_file, but slightly modified to handle a byte string instead</span>
-<span class="sd">    of a file handle. Duplicates a lot of code, BUT avoids additional branches in the inner loop.</span>
+<span class="sd">    of a file handle. Duplicates a lot of code, BUT avoids additional branches or</span>
+<span class="sd">    function calls in the inner loop.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">matches</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">plen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">T_size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">T_size</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">plen</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">T_size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">T_size</span> <span class="o">&lt;</span> <span class="n">plen</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[]</span>
 
-    <span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>      <span class="c1"># Represents alignment of end of P relative to T</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">plen</span> <span class="o">-</span> <span class="mi">1</span>      <span class="c1"># Represents alignment of end of P relative to T</span>
     <span class="n">previous_k</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>     <span class="c1"># Represents alignment in previous phase (Galil&#39;s rule)</span>
 
     <span class="k">while</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">T_size</span><span class="p">:</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># Character to compare in P</span>
-        <span class="n">h</span> <span class="o">=</span> <span class="n">k</span>           <span class="c1"># Character to compare in T</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">plen</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># Character to compare in P</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">k</span>         <span class="c1"># Character to compare in T</span>
 
         <span class="n">peeked</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
 
@@ -277,24 +281,24 @@
             <span class="n">peeked</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">or</span> <span class="n">h</span> <span class="o">==</span> <span class="n">previous_k</span><span class="p">:</span>  <span class="c1"># Match has been found (Galil&#39;s rule)</span>
-            <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span> <span class="o">-</span> <span class="n">plen</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">greedy</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">matches</span>
 
-            <span class="n">k</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="n">F</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">1</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="n">plen</span> <span class="o">-</span> <span class="n">F</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">plen</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">1</span>
 
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># No match, shift by max of bad character and good suffix rules</span>
             <span class="n">char_shift</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="n">peeked</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
 
-            <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>  <span class="c1"># Mismatch happened on first attempt</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">plen</span><span class="p">:</span>  <span class="c1"># Mismatch happened on first attempt</span>
                 <span class="n">suffix_shift</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="k">elif</span> <span class="n">L</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>  <span class="c1"># Matched suffix does not appear anywhere in P</span>
-                <span class="n">suffix_shift</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="n">F</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">suffix_shift</span> <span class="o">=</span> <span class="n">plen</span> <span class="o">-</span> <span class="n">F</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>               <span class="c1"># Matched suffix appears in P</span>
-                <span class="n">suffix_shift</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">L</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">suffix_shift</span> <span class="o">=</span> <span class="n">plen</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">L</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 
-            <span class="n">shift</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">char_shift</span><span class="p">,</span> <span class="n">suffix_shift</span><span class="p">)</span>
+            <span class="n">shift</span> <span class="o">=</span> <span class="n">char_shift</span> <span class="k">if</span> <span class="n">char_shift</span> <span class="o">&gt;</span> <span class="n">suffix_shift</span> <span class="k">else</span> <span class="n">suffix_shift</span>
             <span class="n">previous_k</span> <span class="o">=</span> <span class="n">k</span> <span class="k">if</span> <span class="n">shift</span> <span class="o">&gt;=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">previous_k</span>  <span class="c1"># Galil&#39;s rule</span>
             <span class="n">k</span> <span class="o">+=</span> <span class="n">shift</span>
 

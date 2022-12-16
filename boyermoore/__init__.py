@@ -150,7 +150,7 @@ def _base_search_file(R, L, F, P, T, T_size, greedy) -> List[int]:
 
     while k < T_size:
         i = plen - 1  # Character to compare in P
-        h = k           # Character to compare in T
+        h = k         # Character to compare in T
 
         T.seek(h)
         peeked = T.read(1)[0]
@@ -180,7 +180,7 @@ def _base_search_file(R, L, F, P, T, T_size, greedy) -> List[int]:
             else:               # Matched suffix appears in P
                 suffix_shift = plen - 1 - L[i + 1]
 
-            shift = max(char_shift, suffix_shift)
+            shift = char_shift if char_shift > suffix_shift else suffix_shift
             previous_k = k if shift >= i + 1 else previous_k  # Galil's rule
             k += shift
 
@@ -204,7 +204,7 @@ def _base_search_str(R, L, F, P, T, T_size, greedy) -> List[int]:
 
     while k < T_size:
         i = plen - 1  # Character to compare in P
-        h = k           # Character to compare in T
+        h = k         # Character to compare in T
 
         peeked = T[h]
 
@@ -232,7 +232,7 @@ def _base_search_str(R, L, F, P, T, T_size, greedy) -> List[int]:
             else:               # Matched suffix appears in P
                 suffix_shift = plen - 1 - L[i + 1]
 
-            shift = max(char_shift, suffix_shift)
+            shift = char_shift if char_shift > suffix_shift else suffix_shift
             previous_k = k if shift >= i + 1 else previous_k  # Galil's rule
             k += shift
 
