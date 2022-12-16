@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>boyermoore &mdash; boyermoore 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> boyermoore
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">boyermoore</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">boyermoore</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+      <li>boyermoore</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for boyermoore</h1><div class="highlight"><pre>
+<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;1.0.0&quot;</span>
+
+<span class="c1"># Implementation of the boyer-moore string search algorithm, based on the python</span>
+<span class="c1"># implementation provided at https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string-search_algorithm ,</span>
+<span class="c1"># but modified to support Unicode and also to support searching in files.</span>
+<span class="c1">#</span>
+<span class="c1"># Erik K. Nyquist 2022</span>
+
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1"># We want to support Unicode strings, so instead of having an alphabet based</span>
+<span class="c1"># on ASCII chars or UTF-8 code points, the alphabet is based on byte values,</span>
+<span class="c1"># which requires an alphabet size of 256 for all possible byte values (0x0-0xff)</span>
+<span class="n">ALPHABET_SIZE</span> <span class="o">=</span> <span class="mi">256</span>
+
+
+<span class="k">def</span> <span class="nf">_match_length</span><span class="p">(</span><span class="n">S</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">idx1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">idx2</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Return the length of the match of the substrings of S beginning at idx1 and idx2.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">idx1</span> <span class="o">==</span> <span class="n">idx2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">)</span> <span class="o">-</span> <span class="n">idx1</span>
+
+    <span class="n">match_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">idx1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">)</span> <span class="ow">and</span> <span class="n">idx2</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">)</span> <span class="ow">and</span> <span class="n">S</span><span class="p">[</span><span class="n">idx1</span><span class="p">]</span> <span class="o">==</span> <span class="n">S</span><span class="p">[</span><span class="n">idx2</span><span class="p">]:</span>
+        <span class="n">match_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">idx1</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">idx2</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">match_count</span>
+
+<span class="k">def</span> <span class="nf">_fundamental_preprocess</span><span class="p">(</span><span class="n">S</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Return Z, the Fundamental Preprocessing of S.</span>
+
+<span class="sd">    Z[i] is the length of the substring beginning at i which is also a prefix of S.</span>
+<span class="sd">    This pre-processing is done in O(n) time, where n is the length of S.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Handles case of empty string</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># Handles case of single-character string</span>
+        <span class="k">return</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">S</span><span class="p">]</span>
+    <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+    <span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">_match_length</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>  <span class="c1"># Optimization from exercise 1-5</span>
+        <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="c1"># Defines lower and upper limits of z-box</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">r</span><span class="p">:</span>  <span class="c1"># i falls within existing z-box</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="n">l</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">b</span> <span class="o">&lt;</span> <span class="n">a</span><span class="p">:</span>  <span class="c1"># b ends within existing z-box</span>
+                <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># b ends at or after the end of the z-box, we need to do an explicit match to the right of the z-box</span>
+                <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">_match_length</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">r</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">l</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># i does not reside within existing z-box</span>
+            <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">_match_length</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">l</span> <span class="o">=</span> <span class="n">i</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">z</span>
+
+<span class="k">def</span> <span class="nf">_bad_character_table</span><span class="p">(</span><span class="n">S</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates R for S, which is an array indexed by the position of some character c in the</span>
+<span class="sd">    English alphabet. At that index in R is an array of length |S|+1, specifying for each</span>
+<span class="sd">    index i in S (plus the index after S) the next location of character c encountered when</span>
+<span class="sd">    traversing S from right to left starting at i. This is used for a constant-time lookup</span>
+<span class="sd">    for the bad character rule in the Boyer-Moore string search algorithm, although it has</span>
+<span class="sd">    a much larger size than non-constant-time solutions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ALPHABET_SIZE</span><span class="p">)]</span>
+
+    <span class="n">R</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ALPHABET_SIZE</span><span class="p">)]</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ALPHABET_SIZE</span><span class="p">)]</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">S</span><span class="p">):</span>
+        <span class="n">alpha</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">alpha</span><span class="p">):</span>
+            <span class="n">R</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">R</span>
+
+<span class="k">def</span> <span class="nf">_good_suffix_table</span><span class="p">(</span><span class="n">S</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates L for S, an array used in the implementation of the strong good suffix rule.</span>
+<span class="sd">    L[i] = k, the largest position in S such that S[i:] (the suffix of S starting at i) matches</span>
+<span class="sd">    a suffix of S[:k] (a substring in S ending at k). Used in Boyer-Moore, L gives an amount to</span>
+<span class="sd">    shift P relative to T such that no instances of P in T are skipped and a suffix of P[:L[i]]</span>
+<span class="sd">    matches the substring of T matched by a suffix of P in the previous match attempt.</span>
+<span class="sd">    Specifically, if the mismatch took place at position i-1 in P, the shift magnitude is given</span>
+<span class="sd">    by the equation len(P) - L[i]. In the case that L[i] = -1, the full shift table is used.</span>
+<span class="sd">    Since only proper suffixes matter, L[0] = -1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">S</span><span class="p">]</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">_fundamental_preprocess</span><span class="p">(</span><span class="n">S</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># S[::-1] reverses S</span>
+    <span class="n">N</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">)</span> <span class="o">-</span> <span class="n">N</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">S</span><span class="p">):</span>
+            <span class="n">L</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">j</span>
+
+    <span class="k">return</span> <span class="n">L</span>
+
+<span class="k">def</span> <span class="nf">_full_shift_table</span><span class="p">(</span><span class="n">S</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates F for S, an array used in a special case of the good suffix rule in the Boyer-Moore</span>
+<span class="sd">    string search algorithm. F[i] is the length of the longest suffix of S[i:] that is also a</span>
+<span class="sd">    prefix of S. In the cases it is used, the shift magnitude of the pattern P relative to the</span>
+<span class="sd">    text T is len(P) - F[i] for a mismatch occurring at i-1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">S</span><span class="p">]</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">_fundamental_preprocess</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+
+    <span class="n">longest</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">zv</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">Z</span><span class="p">)):</span>
+        <span class="n">longest</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">zv</span><span class="p">,</span> <span class="n">longest</span><span class="p">)</span> <span class="k">if</span> <span class="n">zv</span> <span class="o">==</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">longest</span>
+        <span class="n">F</span><span class="p">[</span><span class="o">-</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">longest</span>
+
+    <span class="k">return</span> <span class="n">F</span>
+
+<span class="k">def</span> <span class="nf">_base_search_file</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">T_size</span><span class="p">,</span> <span class="n">greedy</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementation of the Boyer-Moore string search algorithm. This finds all occurrences of P</span>
+<span class="sd">    in T, and incorporates numerous ways of pre-processing the pattern to determine the optimal</span>
+<span class="sd">    amount to shift the string and skip comparisons. In practice it runs in O(m) (and even</span>
+<span class="sd">    sublinear) time, where m is the length of T. This implementation performs a case-insensitive</span>
+<span class="sd">    search on ASCII alphabetic characters, spaces not included.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">T_size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">T_size</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>      <span class="c1"># Represents alignment of end of P relative to T</span>
+    <span class="n">previous_k</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>     <span class="c1"># Represents alignment in previous phase (Galil&#39;s rule)</span>
+
+    <span class="k">while</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">T_size</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># Character to compare in P</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">k</span>           <span class="c1"># Character to compare in T</span>
+
+        <span class="n">T</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+        <span class="n">peeked</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">h</span> <span class="o">&gt;</span> <span class="n">previous_k</span> <span class="ow">and</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">peeked</span><span class="p">:</span>  <span class="c1"># Matches starting from end of P</span>
+            <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">h</span> <span class="o">-=</span> <span class="mi">1</span>
+
+            <span class="n">T</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">h</span> <span class="k">if</span> <span class="n">h</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">peeked</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">or</span> <span class="n">h</span> <span class="o">==</span> <span class="n">previous_k</span><span class="p">:</span>  <span class="c1"># Match has been found (Galil&#39;s rule)</span>
+            <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">greedy</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">matches</span>
+
+            <span class="n">k</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="n">F</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">1</span>
+
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># No match, shift by max of bad character and good suffix rules</span>
+            <span class="n">char_shift</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="n">peeked</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>  <span class="c1"># Mismatch happened on first attempt</span>
+                <span class="n">suffix_shift</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">L</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>  <span class="c1"># Matched suffix does not appear anywhere in P</span>
+                <span class="n">suffix_shift</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="n">F</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>               <span class="c1"># Matched suffix appears in P</span>
+                <span class="n">suffix_shift</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">L</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">shift</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">char_shift</span><span class="p">,</span> <span class="n">suffix_shift</span><span class="p">)</span>
+            <span class="n">previous_k</span> <span class="o">=</span> <span class="n">k</span> <span class="k">if</span> <span class="n">shift</span> <span class="o">&gt;=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">previous_k</span>  <span class="c1"># Galil&#39;s rule</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="n">shift</span>
+
+    <span class="k">return</span> <span class="n">matches</span>
+
+
+<span class="k">def</span> <span class="nf">_base_search_str</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">T_size</span><span class="p">,</span> <span class="n">greedy</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Copy of _base_search_file, but slightly modified to handle a byte string instead</span>
+<span class="sd">    of a file handle. Duplicates a lot of code, BUT avoids additional branches in the inner loop.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">T_size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">T_size</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>      <span class="c1"># Represents alignment of end of P relative to T</span>
+    <span class="n">previous_k</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>     <span class="c1"># Represents alignment in previous phase (Galil&#39;s rule)</span>
+
+    <span class="k">while</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">T_size</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># Character to compare in P</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">k</span>           <span class="c1"># Character to compare in T</span>
+
+        <span class="n">peeked</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+
+        <span class="k">while</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">h</span> <span class="o">&gt;</span> <span class="n">previous_k</span> <span class="ow">and</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">peeked</span><span class="p">:</span>  <span class="c1"># Matches starting from end of P</span>
+            <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">h</span> <span class="o">-=</span> <span class="mi">1</span>
+
+            <span class="n">peeked</span> <span class="o">=</span> <span class="n">T</span><span class="p">[</span><span class="n">h</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">or</span> <span class="n">h</span> <span class="o">==</span> <span class="n">previous_k</span><span class="p">:</span>  <span class="c1"># Match has been found (Galil&#39;s rule)</span>
+            <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">greedy</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">matches</span>
+
+            <span class="n">k</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="n">F</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">1</span>
+
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># No match, shift by max of bad character and good suffix rules</span>
+            <span class="n">char_shift</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="n">R</span><span class="p">[</span><span class="n">peeked</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>  <span class="c1"># Mismatch happened on first attempt</span>
+                <span class="n">suffix_shift</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">L</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>  <span class="c1"># Matched suffix does not appear anywhere in P</span>
+                <span class="n">suffix_shift</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="n">F</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>               <span class="c1"># Matched suffix appears in P</span>
+                <span class="n">suffix_shift</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">P</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">L</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">shift</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">char_shift</span><span class="p">,</span> <span class="n">suffix_shift</span><span class="p">)</span>
+            <span class="n">previous_k</span> <span class="o">=</span> <span class="n">k</span> <span class="k">if</span> <span class="n">shift</span> <span class="o">&gt;=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">previous_k</span>  <span class="c1"># Galil&#39;s rule</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="n">shift</span>
+
+    <span class="k">return</span> <span class="n">matches</span>
+
+
+<div class="viewcode-block" id="preprocess"><a class="viewcode-back" href="../boyermoore.html#boyermoore.preprocess">[docs]</a><span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pre-process a pattern, for use with boyermoore_string_pp or boyermoore_file_pp.</span>
+
+<span class="sd">    :param pattern: pattern to pre-process. Must be either str or bytes.</span>
+<span class="sd">    :return: tuple of preprocessed data</span>
+<span class="sd">    :rtype: tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Pattern must be str or bytes&quot;</span><span class="p">)</span>
+
+    <span class="n">R</span> <span class="o">=</span> <span class="n">_bad_character_table</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">_good_suffix_table</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="n">_full_shift_table</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">pattern</span></div>
+
+
+<div class="viewcode-block" id="search_string_pp"><a class="viewcode-back" href="../boyermoore.html#boyermoore.search_string_pp">[docs]</a><span class="k">def</span> <span class="nf">search_string_pp</span><span class="p">(</span><span class="n">pp_data</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">greedy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Search for all occurrences of a pre-processed pattern inside a string.</span>
+
+<span class="sd">    :param pp_data: return value from boyermoore.preprocess</span>
+<span class="sd">    :param string: input data to search for pattern inside. Must be either str or bytes.</span>
+<span class="sd">    :param bool greedy: If True, all occurrences will be returned. If False, \</span>
+<span class="sd">        the search will stop after the first occurrence and only the first \</span>
+<span class="sd">        occurrence will be returned.</span>
+<span class="sd">    :return: list of byte offsets of all occurrences that were found</span>
+<span class="sd">    :rtype: [int]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">pp_data</span>
+    <span class="k">return</span> <span class="n">_base_search_str</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">),</span> <span class="n">greedy</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="search_file_pp"><a class="viewcode-back" href="../boyermoore.html#boyermoore.search_file_pp">[docs]</a><span class="k">def</span> <span class="nf">search_file_pp</span><span class="p">(</span><span class="n">pp_data</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">greedy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Search for all occurrences of a pre-processed pattern inside a file.</span>
+
+<span class="sd">    :param pp_data: return value from boyermoore.preprocess</span>
+<span class="sd">    :param str filename: name of file search for pattern in</span>
+<span class="sd">    :param bool greedy: If True, all occurrences will be returned. If False, \</span>
+<span class="sd">        the search will stop after the first occurrence and only the first \</span>
+<span class="sd">        occurrence will be returned.</span>
+<span class="sd">    :return: list of byte offsets of all occurrences that were found</span>
+<span class="sd">    :rtype: [int]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">pp_data</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">data_size</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_base_search_file</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">fh</span><span class="p">,</span> <span class="n">data_size</span><span class="p">,</span> <span class="n">greedy</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="search_string"><a class="viewcode-back" href="../boyermoore.html#boyermoore.search_string">[docs]</a><span class="k">def</span> <span class="nf">search_string</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="n">greedy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pre-process a pattern and search for all occurences inside a string.</span>
+
+<span class="sd">    :param pattern: pattern to search for. Must be either str or bytes.</span>
+<span class="sd">    :param string: input data to search for pattern inside. Must be either str or bytes.</span>
+<span class="sd">    :param bool greedy: If True, all occurrences will be returned. If False, \</span>
+<span class="sd">        the search will stop after the first occurrence and only the first \</span>
+<span class="sd">        occurrence will be returned.</span>
+<span class="sd">    :return: list of byte offsets of all occurrences that were found</span>
+<span class="sd">    :rtype: [int]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">preprocess</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_base_search_str</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">string</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">),</span> <span class="n">greedy</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="search_file"><a class="viewcode-back" href="../boyermoore.html#boyermoore.search_file">[docs]</a><span class="k">def</span> <span class="nf">search_file</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">greedy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pre-process a pattern and search for all occurences inside a file.</span>
+
+<span class="sd">    :param pattern: pattern to search for. Must be either str or bytes.</span>
+<span class="sd">    :param filename: name of file to search for pattern in</span>
+<span class="sd">    :param bool greedy: If True, all occurrences will be returned. If False, \</span>
+<span class="sd">        the search will stop after the first occurrence and only the first \</span>
+<span class="sd">        occurrence will be returned.</span>
+<span class="sd">    :return: list of byte offsets of all occurrences that were found</span>
+<span class="sd">    :rtype: [int]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="n">preprocess</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">data_size</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_base_search_file</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">F</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">fh</span><span class="p">,</span> <span class="n">data_size</span><span class="p">,</span> <span class="n">greedy</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Erik K. Nyquist.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

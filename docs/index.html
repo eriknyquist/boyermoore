@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to boyermoore’s documentation! &mdash; boyermoore 1.0.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="boyermoore" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="#" class="icon icon-home"> boyermoore
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">boyermoore</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">boyermoore</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+      <li>Welcome to boyermoore’s documentation!</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="welcome-to-boyermoore-s-documentation">
+<h1><a class="toc-backref" href="#id1">Welcome to boyermoore’s documentation!</a><a class="headerlink" href="#welcome-to-boyermoore-s-documentation" title="Permalink to this headline"></a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">boyermoore</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="boyermoore.html">boyermoore package</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p><img alt="tests_badge" src="https://github.com/eriknyquist/boyermoore/actions/workflows/tests.yml/badge.svg" /> <img alt="cov_badge" src="https://github.com/eriknyquist/boyermoore/actions/workflows/coverage.yml/badge.svg" /> <img alt="codeclimate_badge" src="https://api.codeclimate.com/v1/badges/a5d499edc22f0a05c533/maintainability" /></p>
+<div class="section" id="boyer-moore-in-pure-python-search-for-unicode-strings-quickly-in-large-files">
+<h2><a class="toc-backref" href="#id2">Boyer-Moore in pure python: search for unicode strings quickly in large files</a><a class="headerlink" href="#boyer-moore-in-pure-python-search-for-unicode-strings-quickly-in-large-files" title="Permalink to this headline"></a></h2>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title"><strong>Table Of Contents</strong></p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#welcome-to-boyermoore-s-documentation" id="id1">Welcome to boyermoore’s documentation!</a></p>
+<ul>
+<li><p><a class="reference internal" href="#boyer-moore-in-pure-python-search-for-unicode-strings-quickly-in-large-files" id="id2">Boyer-Moore in pure python: search for unicode strings quickly in large files</a></p></li>
+<li><p><a class="reference internal" href="#searching-for-all-occurences-of-a-substring-in-a-file" id="id3">Searching for all occurences of a substring in a file</a></p></li>
+<li><p><a class="reference internal" href="#searching-for-the-first-occurence-of-a-substring-in-a-file" id="id4">Searching for the first occurence of a substring in a file</a></p></li>
+<li><p><a class="reference internal" href="#performance-speed-test" id="id5">Performance / Speed test</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#test-environment" id="id6">Test environment</a></p></li>
+<li><p><a class="reference internal" href="#test-methodology" id="id7">Test methodology</a></p></li>
+<li><p><a class="reference internal" href="#test-results" id="id8">Test results</a></p></li>
+<li><p><a class="reference internal" href="#indices-and-tables" id="id9">Indices and tables</a></p></li>
+</ul>
+</div>
+<p>This is an implementation of the Boyer-Moore substring search algorithm in pure python.</p>
+<p>It is a shameless copy-paste of the python reference code provided <a class="reference external" href="https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore_string-search_algorithm">here</a>,
+with modifications to support the following additional features:</p>
+<ul class="simple">
+<li><p>Searching in files without reading the whole file into memory, allowing handling of large files</p></li>
+<li><p>Full unicode support</p></li>
+</ul>
+</div>
+<div class="section" id="searching-for-all-occurences-of-a-substring-in-a-file">
+<h2><a class="toc-backref" href="#id3">Searching for all occurences of a substring in a file</a><a class="headerlink" href="#searching-for-all-occurences-of-a-substring-in-a-file" title="Permalink to this headline"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">boyermoore</span> <span class="kn">import</span> <span class="n">search_file</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">offsets</span> <span class="o">=</span> <span class="n">search_file</span><span class="p">(</span><span class="s2">&quot;pattern!&quot;</span><span class="p">,</span> <span class="s2">&quot;file.txt&quot;</span><span class="p">)</span>                 <span class="c1"># Find all occurrences of &quot;pattern!&quot; in file &quot;file.txt&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">offsets</span>                                                       <span class="c1"># Display found occurrences</span>
+<span class="go">[12, 456, 10422]                                                  # Pattern occurs at byte offsets 12, 456, and 104222</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="searching-for-the-first-occurence-of-a-substring-in-a-file">
+<h2><a class="toc-backref" href="#id4">Searching for the first occurence of a substring in a file</a><a class="headerlink" href="#searching-for-the-first-occurence-of-a-substring-in-a-file" title="Permalink to this headline"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">boyermoore</span> <span class="kn">import</span> <span class="n">search_file</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">offsets</span> <span class="o">=</span> <span class="n">search_file</span><span class="p">(</span><span class="s2">&quot;pattern!&quot;</span><span class="p">,</span> <span class="s2">&quot;file.txt&quot;</span><span class="p">,</span> <span class="n">greedy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>   <span class="c1"># Find the first occurrence of &quot;pattern!&quot; in file &quot;file.txt&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">offsets</span>                                                       <span class="c1"># Display found occurrences</span>
+<span class="go">[12]                                                              # First occurrence of pattern is at byte offset 12</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="performance-speed-test">
+<h2><a class="toc-backref" href="#id5">Performance / Speed test</a><a class="headerlink" href="#performance-speed-test" title="Permalink to this headline"></a></h2>
+<p>The following section illustrates the average speed of the <code class="docutils literal notranslate"><span class="pre">boyermoore.search_file</span></code>
+function when searching for a unicode string in files of sizes ranging from 32MB to 4GB.</p>
+</div>
+</div>
+<div class="section" id="test-environment">
+<h1><a class="toc-backref" href="#id6">Test environment</a><a class="headerlink" href="#test-environment" title="Permalink to this headline"></a></h1>
+<p>The test was executed using Python 3.7.6 on a Windows 10 system with an Intel(R) Core(TM) i7-8700K CPU &#64; 3.70GHz
+and 32 GB of RAM.</p>
+</div>
+<div class="section" id="test-methodology">
+<h1><a class="toc-backref" href="#id7">Test methodology</a><a class="headerlink" href="#test-methodology" title="Permalink to this headline"></a></h1>
+<p>The test searches for all occurrences of a fixed unicode string in a series of test files.
+The unicode string is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Hello</span> <span class="n">नमस्ते</span> <span class="n">Привет</span> <span class="n">こんにちは</span>
+</pre></div>
+</div>
+<p>(“Hello” in English, followed by the Hindi translation, followed by the Russian translation,
+followed by the Japanese translation)</p>
+<p>Each test file has 2 occurrences of the unicode string, one at the very beginning (byte offset of 0)
+and one at the very end (byte offset of [file_length - pattern_length]).</p>
+</div>
+<div class="section" id="test-results">
+<h1><a class="toc-backref" href="#id8">Test results</a><a class="headerlink" href="#test-results" title="Permalink to this headline"></a></h1>
+<p>The following table shows the times taken to search for all occurences of the unicode
+string “Hello नमस्ते Привет こんにちは” inside test files of various sizes.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 59%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>File size</p></th>
+<th class="head"><p>Time (seconds)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>32 MB</p></td>
+<td><p>0.48</p></td>
+</tr>
+<tr class="row-odd"><td><p>64 MB</p></td>
+<td><p>0.89</p></td>
+</tr>
+<tr class="row-even"><td><p>128 MB</p></td>
+<td><p>1.68</p></td>
+</tr>
+<tr class="row-odd"><td><p>256 MB</p></td>
+<td><p>3.32</p></td>
+</tr>
+<tr class="row-even"><td><p>512 MB</p></td>
+<td><p>6.48</p></td>
+</tr>
+<tr class="row-odd"><td><p>1 GB</p></td>
+<td><p>12.98</p></td>
+</tr>
+<tr class="row-even"><td><p>4 GB</p></td>
+<td><p>53.07</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="indices-and-tables">
+<h1><a class="toc-backref" href="#id9">Indices and tables</a><a class="headerlink" href="#indices-and-tables" title="Permalink to this headline"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-right" title="boyermoore" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Erik K. Nyquist.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
