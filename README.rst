@@ -19,6 +19,8 @@ with modifications to support the following additional features:
 * Searching in files without reading the whole file into memory, allowing handling of large files
 * Full unicode support
 
+See the `API documentation <https://eriknyquist.github.io/boyermoore/>`_ for more details.
+
 Installing
 ----------
 
