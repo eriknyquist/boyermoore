@@ -139,15 +139,17 @@ def _base_search_file(R, L, F, P, T, T_size, greedy) -> List[int]:
     search on ASCII alphabetic characters, spaces not included.
     """
     matches = []
+    plen = len(P)
 
-    if len(P) == 0 or T_size == 0 or T_size < len(P):
+
+    if plen == 0 or T_size == 0 or T_size < plen:
         return []
 
-    k = len(P) - 1      # Represents alignment of end of P relative to T
+    k = plen - 1      # Represents alignment of end of P relative to T
     previous_k = -1     # Represents alignment in previous phase (Galil's rule)
 
     while k < T_size:
-        i = len(P) - 1  # Character to compare in P
+        i = plen - 1  # Character to compare in P
         h = k           # Character to compare in T
 
         T.seek(h)
@@ -161,22 +163,22 @@ def _base_search_file(R, L, F, P, T, T_size, greedy) -> List[int]:
             peeked = T.read(1)[0]
 
         if i == -1 or h == previous_k:  # Match has been found (Galil's rule)
-            matches.append(k - len(P) + 1)
+            matches.append(k - plen + 1)
 
             if not greedy:
                 return matches
 
-            k += len(P) - F[1] if len(P) > 1 else 1
+            k += plen - F[1] if plen > 1 else 1
 
         else:  # No match, shift by max of bad character and good suffix rules
             char_shift = i - R[peeked][i]
 
-            if i + 1 == len(P):  # Mismatch happened on first attempt
+            if i + 1 == plen:  # Mismatch happened on first attempt
                 suffix_shift = 1
             elif L[i + 1] == -1:  # Matched suffix does not appear anywhere in P
-                suffix_shift = len(P) - F[i + 1]
+                suffix_shift = plen - F[i + 1]
             else:               # Matched suffix appears in P
-                suffix_shift = len(P) - 1 - L[i + 1]
+                suffix_shift = plen - 1 - L[i + 1]
 
             shift = max(char_shift, suffix_shift)
             previous_k = k if shift >= i + 1 else previous_k  # Galil's rule
@@ -188,18 +190,20 @@ def _base_search_file(R, L, F, P, T, T_size, greedy) -> List[int]:
 def _base_search_str(R, L, F, P, T, T_size, greedy) -> List[int]:
     """
     Copy of _base_search_file, but slightly modified to handle a byte string instead
-    of a file handle. Duplicates a lot of code, BUT avoids additional branches in the inner loop.
+    of a file handle. Duplicates a lot of code, BUT avoids additional branches or
+    function calls in the inner loop.
     """
     matches = []
+    plen = len(P)
 
-    if len(P) == 0 or T_size == 0 or T_size < len(P):
+    if plen == 0 or T_size == 0 or T_size < plen:
         return []
 
-    k = len(P) - 1      # Represents alignment of end of P relative to T
+    k = plen - 1      # Represents alignment of end of P relative to T
     previous_k = -1     # Represents alignment in previous phase (Galil's rule)
 
     while k < T_size:
-        i = len(P) - 1  # Character to compare in P
+        i = plen - 1  # Character to compare in P
         h = k           # Character to compare in T
 
         peeked = T[h]
@@ -211,22 +215,22 @@ def _base_search_str(R, L, F, P, T, T_size, greedy) -> List[int]:
             peeked = T[h]
 
         if i == -1 or h == previous_k:  # Match has been found (Galil's rule)
-            matches.append(k - len(P) + 1)
+            matches.append(k - plen + 1)
 
             if not greedy:
                 return matches
 
-            k += len(P) - F[1] if len(P) > 1 else 1
+            k += plen - F[1] if plen > 1 else 1
 
         else:  # No match, shift by max of bad character and good suffix rules
             char_shift = i - R[peeked][i]
 
-            if i + 1 == len(P):  # Mismatch happened on first attempt
+            if i + 1 == plen:  # Mismatch happened on first attempt
                 suffix_shift = 1
             elif L[i + 1] == -1:  # Matched suffix does not appear anywhere in P
-                suffix_shift = len(P) - F[i + 1]
+                suffix_shift = plen - F[i + 1]
             else:               # Matched suffix appears in P
-                suffix_shift = len(P) - 1 - L[i + 1]
+                suffix_shift = plen - 1 - L[i + 1]
 
             shift = max(char_shift, suffix_shift)
             previous_k = k if shift >= i + 1 else previous_k  # Galil's rule
