@@ -1,0 +1,4 @@
+wheel
+coverage
+sphinx
+sphinx_rtd_theme
