@@ -8,9 +8,14 @@ Welcome to boyermoore's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: API Documentation:
 
    modules
+
+
+Introduction
+============
+
 
 .. include:: ../../README.rst
 

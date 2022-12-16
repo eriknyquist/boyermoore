@@ -2,7 +2,7 @@
 .. contents:: **Table Of Contents**
 
 Boyer-Moore in pure python: search for unicode strings quickly in large files
------------------------------------------------------------------------------
+*****************************************************************************
 
 .. |tests_badge| image:: https://github.com/eriknyquist/boyermoore/actions/workflows/tests.yml/badge.svg
 .. |cov_badge| image:: https://github.com/eriknyquist/boyermoore/actions/workflows/coverage.yml/badge.svg
@@ -59,13 +59,13 @@ The following section illustrates the average speed of the ``boyermoore.search_f
 function when searching for a unicode string in files of sizes ranging from 32MB to 4GB.
 
 Test environment
-=================
+################
 
 The test was executed using Python 3.7.6 on a Windows 10 system with an Intel(R) Core(TM) i7-8700K CPU @ 3.70GHz
 and 32 GB of RAM.
 
 Test methodology
-================
+################
 
 The test searches for all occurrences of a fixed unicode string in a series of test files.
 The unicode string is:
@@ -81,7 +81,7 @@ Each test file has 2 occurrences of the unicode string, one at the very beginnin
 and one at the very end (byte offset of [file_length - pattern_length]).
 
 Test results
-============
+############
 
 The following table shows the times taken to search for all occurences of the unicode
 string "Hello नमस्ते Привет こんにちは" inside test files of various sizes.
