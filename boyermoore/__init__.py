@@ -6,6 +6,7 @@ __version__ = "1.0.0"
 #
 # Erik K. Nyquist 2022
 
+import array
 import io
 from typing import *
 
@@ -253,10 +254,10 @@ def preprocess(pattern) -> Tuple:
         raise ValueError("Pattern must be str or bytes")
 
     R = _bad_character_table(pattern)
-    L = _good_suffix_table(pattern)
-    F = _full_shift_table(pattern)
+    L = array.array('q', _good_suffix_table(pattern))
+    F = array.array('q', _full_shift_table(pattern))
 
-    return R, L, F, pattern
+    return R, L, F, array.array('B', list(pattern))
 
 
 def search_string_pp(pp_data, string, greedy=True) -> List[int]:

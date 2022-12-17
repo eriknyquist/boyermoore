@@ -31,12 +31,12 @@ def make_big_file(filename, pattern, offsets):
 
 def main():
     sizes = [
-        #1024 * 1024 * 32,
-        #1024 * 1024 * 64,
-        #1024 * 1024 * 128,
-        #1024 * 1024 * 256,
-        #1024 * 1024 * 512,
-        #1024 * 1024 * 1024,
+        1024 * 1024 * 32,
+        1024 * 1024 * 64,
+        1024 * 1024 * 128,
+        1024 * 1024 * 256,
+        1024 * 1024 * 512,
+        1024 * 1024 * 1024,
         1024 * 1024 * 1024 * 4,
     ]
 
@@ -49,16 +49,16 @@ def main():
         filename = "__big_testfile%d.txt" % count
         count += 1
 
-        #make_big_file(filename, pattern, offsets)
-        make_big_file("big_file.txt", pattern, offsets)
+        make_big_file(filename, pattern, offsets)
+        #make_big_file("big_file.txt", pattern, offsets)
 
-        #start_time = time.time()
-        #search_file_pp(pp_data, filename)
-        #time_secs = time.time() - start_time
+        start_time = time.time()
+        search_file_pp(pp_data, filename)
+        time_secs = time.time() - start_time
 
-        #print(f"{size:,} bytes: {time_secs:.2f}")
+        print(f"{size:,} bytes: {time_secs:.2f}")
 
-        #os.remove(filename)
+        os.remove(filename)
 
 if __name__ == "__main__":
     main()
