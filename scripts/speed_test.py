@@ -32,7 +32,7 @@ def make_big_file(filename, pattern, offsets):
 def linear_search(filename, pattern):
     pos = 0
     last_start_pos = 0
-    matches = 0
+    matches = []
     curr_match = 0
 
     with open(filename, 'rb') as fh:
@@ -48,7 +48,7 @@ def linear_search(filename, pattern):
                     curr_match = fh.tell()
 
                 if pos >= len(pattern):
-                    matches += curr_match
+                    matches.append(curr_match)
                     pos = 0
             else:
                 pos = 0
