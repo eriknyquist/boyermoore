@@ -60,10 +60,12 @@ Performance / Speed test
 The following section illustrates the average speed of the ``boyermoore.search_file``
 function when searching for a unicode string in files of sizes ranging from 32MB to 4GB.
 
+The test is implemented in the file ``scripts/speed_test.py`` if you want to inspect the code yourself.
+
 Test environment
 ################
 
-The test was executed using Python 3.7.6 on a Windows 10 system with an Intel(R) Core(TM) i7-8700K CPU @ 3.70GHz
+The test was executed using Python 3.9.13 on a Windows 10 system with an Intel(R) Core(TM) i7-8700K CPU @ 3.70GHz
 and 32 GB of RAM.
 
 Test methodology
@@ -86,25 +88,31 @@ Test results
 ############
 
 The following table shows the times taken to search for all occurences of the unicode
-string "Hello नमस्ते Привет こんにちは" inside test files of various sizes.
+string "Hello नमस्ते Привет こんにちは" inside test files of various sizes, and compares
+it to a linear search of the same data.
 
-+-----------+----------------+
-| File size | Time (seconds) |
-+===========+================+
-| 32 MB     | 0.31           |
-+-----------+----------------+
-| 64 MB     | 0.55           |
-+-----------+----------------+
-| 128 MB    | 1.07           |
-+-----------+----------------+
-| 256 MB    | 1.96           |
-+-----------+----------------+
-| 512 MB    | 3.87           |
-+-----------+----------------+
-| 1 GB      | 7.56           |
-+-----------+----------------+
-| 4 GB      | 31.01          |
-+-----------+----------------+
++-----------+----------------+-------------+
+| File size | Boyer-moore    | Linear time |
+|           | time (seconds) | (seconds)   |
++===========+================+=============+
+| 1  MB     | 0.01           | 0.08        |
++-----------+----------------+-------------+
+| 2 MB      | 0.02           | 0.17        |
++-----------+----------------+-------------+
+| 32 MB     | 0.24           | 2.67        |
++-----------+----------------+-------------+
+| 64 MB     | 0.47           | 5.24        |
++-----------+----------------+-------------+
+| 128 MB    | 0.93           | 10.62       |
++-----------+----------------+-------------+
+| 256 MB    | 1.88           | 21.44       |
++-----------+----------------+-------------+
+| 512 MB    | 4.16           | 43.76       |
++-----------+----------------+-------------+
+| 1 GB      | 7.44           | 85.46       |
++-----------+----------------+-------------+
+| 2 GB      | 16.03          | 175.93      |
++-----------+----------------+-------------+
 
 Contributions
 *************
