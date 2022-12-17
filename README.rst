@@ -7,8 +7,8 @@ Boyer-Moore in pure python: search for unicode strings quickly in large files
 .. |tests_badge| image:: https://github.com/eriknyquist/boyermoore/actions/workflows/tests.yml/badge.svg
 .. |cov_badge| image:: https://github.com/eriknyquist/boyermoore/actions/workflows/coverage.yml/badge.svg
 .. |codeclimate_badge| image:: https://api.codeclimate.com/v1/badges/a5d499edc22f0a05c533/maintainability
-.. |version_badge| image:: https://badgen.net/pypi/v/versionedobj
-.. |license_badge| image:: https://badgen.net/pypi/license/versionedobj
+.. |version_badge| image:: https://badgen.net/pypi/v/boyermoore
+.. |license_badge| image:: https://badgen.net/pypi/license/boyermoore
 
 |tests_badge| |cov_badge| |codeclimate_badge| |license_badge| |version_badge|
 
