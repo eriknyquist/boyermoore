@@ -58,7 +58,7 @@ Performance / Speed test
 ------------------------
 
 The following section illustrates the average speed of the ``boyermoore.search_file``
-function when searching for a unicode string in files of sizes ranging from 32MB to 4GB.
+function when searching for a unicode string in files of sizes ranging from 1MB to 2GB.
 
 The test is implemented in the file ``scripts/speed_test.py`` if you want to inspect the code yourself.
 
